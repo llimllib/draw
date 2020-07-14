@@ -1,0 +1,5 @@
+"library GLU not found" -> install glu glu-devel
+
+I want a library with color names -> rgb triples
+
+Demo on how to make a transparent trail: https://stackoverflow.com/a/56421870
