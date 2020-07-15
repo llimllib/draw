@@ -24,14 +24,10 @@ class Ball(shapes.Circle):
         # right now, so start it at 60
         self._radius = 60
 
-        super(Ball, self).__init__(x, y, self.radius, color=color, batch=batch)
+        super(Ball, self).__init__(x, y, self._radius, color=color, batch=batch)
 
     @property
     def radius(self):
-        """The radius of the circle.
-
-        :type: float
-        """
         return self._radius
 
     @radius.setter
