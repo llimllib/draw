@@ -3,3 +3,11 @@
 I want a library with color names -> rgb triples
 
 Demo on how to make a transparent trail: https://stackoverflow.com/a/56421870
+
+* To save a screenshot
+    pyglet.image.get_buffer_manager().get_color_buffer().save(
+        f"gif/{self.frame:03}.png"
+    )
+
+* examples/media_player.py in the pyglet repo is an excellent example to work from:
+https://github.com/pyglet/pyglet/blob/0b785dc8ffac0da86513e825552b49f839173596/examples/media_player.py
