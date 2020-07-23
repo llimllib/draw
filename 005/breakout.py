@@ -298,10 +298,10 @@ class BreakoutWindow(pyglet.window.Window):
                 self.mididx = 0
 
             bx, by, hit_bottom = self.ball.update(dt)
-            # if hit_bottom:
-            #     if not self.paddle.x < bx < self.paddle.x + self.paddle.WIDTH:
-            #         self.game_state = self.OVER
-            #         self.game_over_label.y = self.WIDTH / 2
+            if hit_bottom:
+                if not self.paddle.x < bx < self.paddle.x + self.paddle.WIDTH:
+                    self.game_state = self.OVER
+                    self.game_over_label.y = self.WIDTH / 2
 
             for i, brick in enumerate(self.bricks):
                 if (
