@@ -92,7 +92,7 @@ instr 4
   ; hold indefinitely?
   ; asig = zdf_ladder(asig, expon(100, 1, 22000), 12)
   ; Steven Yi (!) responded to my message and suggested something like this:
-  ; asig = expsegr(100, 1, 22000, 1, 100)
+  asig = zdf_ladder(asig, expsegr(100, 1, 22000, 1, 100), 12)
   ; asig = moogladder(asig, 22000, 0.5)
   pan_verb_mix(asig, xchan:i("Sub3.pan", 0.5), xchan:i("Sub3.rvb", chnget:i("rvb.default")))
 endin
