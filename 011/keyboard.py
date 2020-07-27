@@ -21,13 +21,6 @@ SAMPLERATE = 44100
 # TODO: choose between instruments and show it on the UI
 
 
-def on_midi(msg):
-    if msg.type == "note_on":
-        on.add(msg.note)
-    if msg.type == "note_off":
-        on.remove(msg.note)
-
-
 class KeyboardSynth(pyglet.window.Window):
     WIDTH = 600
     HEIGHT = 600
