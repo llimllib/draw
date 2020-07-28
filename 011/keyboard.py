@@ -14,18 +14,9 @@ from utils.notes import notes
 
 SAMPLERATE = 44100
 
-# TODO: figure out what those variables I'm setting at the top mean
 # TODO: get the orchestra into a separate file?
 # TODO: play around with some programs! Find more parameters that are settable
-# TODO: get some UI up and running
 # TODO: choose between instruments and show it on the UI
-
-
-def on_midi(msg):
-    if msg.type == "note_on":
-        on.add(msg.note)
-    if msg.type == "note_off":
-        on.remove(msg.note)
 
 
 class KeyboardSynth(pyglet.window.Window):
@@ -62,21 +53,16 @@ instr 2
   asig = vco2(ampdbfs(-12), p4)
   asig += vco2(ampdbfs(-12), p4 * 1.01, 10)
   asig += vco2(ampdbfs(-12), p4 * 2, 10)
-  ; the provided implementation of Sub1 gives the duration here
-  ;   the second parameter of zdf_ladder represents the cutoff frequency
-  ;   (I don't _really_ know what this means, tbh)
-  ;     expon(start, dur, end) traces an exponential curve between the given points - so here we're telling zdf_ladder that its cutoff starts at 10000, and decreases to 400 at the given duration.
-  ;     The problem is of course that we're playing the notes live so there is no known duration - let's just set it to 1. Possibly add a default to livecode?
-  asig = zdf_ladder(asig, 1000, 5)
+  asig = zdf_ladder(asig, expsegr(10000, 1, 400, .1, 400), 5)
   pan_verb_mix(asig, xchan:i("2.pan", 0.5), xchan:i("2.rvb", chnget:i("rvb.default")))
 endin
 
 ; based on Sub2
 instr 3
+  icut = xchan:i("3.cut", sr / 3)
   asig = vco2(ampdbfs(-12), p4) 
   asig += vco2(ampdbfs(-12), p4 * 1.5) 
-  ; TODO: set the 10000 to a channel that can be set
-  asig = zdf_ladder(asig, 10000, 5)
+  asig = zdf_ladder(asig, expsegr(icut, 1, 400, .1, 400), 5)
   pan_verb_mix(asig, xchan:i("3.pan", 0.5), xchan:i("3.rvb", chnget:i("rvb.default")))
 endin
 
@@ -86,14 +72,7 @@ instr 4
   asig += vco2(p5, p4 * 1.01)
   asig += vco2(p5, p4 * 0.995)
   asig *= 0.33 
-  ; so, I have to comment this out, but it's the heart of this synth:
-  ; How tdo I have a function that goes exponentially like this, but then
-  ; _holds_ at the endpoint? So, say: 100 -> 22000 over one second, then
-  ; hold indefinitely?
-  ; asig = zdf_ladder(asig, expon(100, 1, 22000), 12)
-  ; Steven Yi (!) responded to my message and suggested something like this:
   asig = zdf_ladder(asig, expsegr(100, 1, 22000, 1, 100), 12)
-  ; asig = moogladder(asig, 22000, 0.5)
   pan_verb_mix(asig, xchan:i("Sub3.pan", 0.5), xchan:i("Sub3.rvb", chnget:i("rvb.default")))
 endin
 """
