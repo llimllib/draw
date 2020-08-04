@@ -1713,7 +1713,8 @@ endin
 instr Click 
   asig = mpulse(1, 0)
   asig = zdf_2pole(asig, p4, 3, 3)
-  
+  print p5
+  print p4
   asig *= p5 * 4      ;; adjust amp 
   asig *= linen:a(1, 0, p3, 0.01)
   

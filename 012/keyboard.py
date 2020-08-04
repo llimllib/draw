@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from enum import Enum
 from math import ceil
 import os
 import sys
@@ -20,18 +21,23 @@ SAMPLERATE = 44100
 # TODO: pitch wheel
 #       when I connect to the keyboard with "midi monitor", it shows the pitch
 #       wheel messages coming from the midi port
+# TODO: how to read the clock out of csound
 
 
 class KeyboardSynth(pyglet.window.Window):
     WIDTH = 600
     HEIGHT = 600
 
+    KEYBOARD = 0
+    DRUMPAD = 9
+
     def __init__(self, csound):
         super(KeyboardSynth, self).__init__(self.WIDTH, self.HEIGHT)
         self.cs = csound
         self.cs.setOption("-odac")
         self.cs.setOption("-m6")
-        orc = open("a.csd").read().format(SAMPLERATE=SAMPLERATE)
+        csound_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "a.csd"))
+        orc = open(csound_file).read().format(SAMPLERATE=SAMPLERATE)
         if self.cs.compileOrc(orc) != 0:
             print("failed to compile orchestra")
             self.close()
@@ -44,6 +50,11 @@ class KeyboardSynth(pyglet.window.Window):
         # controls this, at startup, but I don't know how to query the keyboard
         # for its value so we just wait for it to change. I can't figure out
         # how to do this!
+        #
+        # I would also love to figure out how to call named instruments, but
+        # the dot notation doesn't seem to work for them. i.e. I'd love to say
+        # 'i "Sub".1 <arguments>' followed by 'i "-Sub".1' to turn it off, but
+        # I can't make it work
         self.instrument = 1
         self.n_instruments = 4
 
@@ -78,18 +89,25 @@ class KeyboardSynth(pyglet.window.Window):
         if msg.type == "clock":
             return
         elif msg.type == "note_on":
-            print(msg)
-            self.notes.append(notes[msg.note][0])
-            self.gltext = ", ".join(self.notes)
-            cmsg = f"i {self.instrument}.{msg.note} 0 -1 {notes[msg.note][1]} {msg.velocity/255:.2}"
-            print(cmsg)
-            self.t.inputMessage(cmsg)
+            if msg.channel == self.KEYBOARD:
+                print(msg)
+                self.notes.append(notes[msg.note][0])
+                self.gltext = ", ".join(self.notes)
+                cmsg = f"i {self.instrument}.{msg.note} 0 -1 {notes[msg.note][1]} {msg.velocity/255:.2}"
+                print(cmsg)
+                self.t.inputMessage(cmsg)
+            if msg.channel == self.DRUMPAD:
+                print(msg)
+                cmsg = f"i 5 0 -1 6000 {msg.velocity/127:.2}"
+                print(cmsg)
+                self.t.inputMessage(cmsg)
         elif msg.type == "note_off":
-            self.notes.remove(notes[msg.note][0])
-            self.gltext = ", ".join(self.notes)
-            cmsg = f"i -{self.instrument}.{msg.note} 0 -1"
-            print(cmsg)
-            self.t.inputMessage(cmsg)
+            if msg.channel == self.KEYBOARD:
+                self.notes.remove(notes[msg.note][0])
+                self.gltext = ", ".join(self.notes)
+                cmsg = f"i -{self.instrument}.{msg.note} 0 -1"
+                print(cmsg)
+                self.t.inputMessage(cmsg)
         elif msg.type == "control_change":
             if msg.control == 21:
                 ival = ceil(msg.value / (127 / self.n_instruments))
@@ -102,6 +120,10 @@ class KeyboardSynth(pyglet.window.Window):
             elif msg.control == 22:
                 print(msg, msg.value / 127)
                 self.cs.setControlChannel("resonance", msg.value / 127)
+            else:
+                print("Unhandled message", msg)
+        else:
+            print("Unhandled message", msg)
 
     def on_daw_in(self, msg):
         if msg.type == "clock":
@@ -143,8 +165,15 @@ if __name__ == "__main__":
                 # keypad go blank, and now the keypads send input on the daw
                 # input channel. Also we seem to get the > and stop/solo/mute
                 # buttons now. Still no pitch bend and modulation though
-                daw_out.send(mido.Message("note_on", channel=15, note=12, velocity=0))
-                daw_out.send(mido.Message("note_on", channel=15, note=12, velocity=127))
+                # daw_out.send(mido.Message("note_on", channel=15, note=12, velocity=0))
+                # daw_out.send(mido.Message("note_on", channel=15, note=12, velocity=127))
+                #
+                # OK, I don't think I really need these; I just noticed that
+                # the drum pad messages come in on channel 9, while the
+                # keyboard is on channel 0 so we can distinguish them that way
+                #
+                # also pitch wheel messages were coming through and I was
+                # throwing them away like a dope
                 print("keyboard initialized")
         except OSError:
             print("no keyboard found")
