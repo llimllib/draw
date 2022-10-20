@@ -22,3 +22,13 @@ a series of experiments
 TODO:
 - figure out a reasonable way to be able to import utils
 
+## Note
+
+To get it to build on my mac, I ran it with these environment variables:
+
+```
+export DYLD_FRAMEWORK_PATH="$DYLD_FRAMEWORK_PATH:/usr/local/opt/csound/Frameworks"
+
+# https://csound.com/docs/manual/CommandEnvironment.html
+export INCDIR="utils"
+```
